@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "uglify": "babel src/js -d dist/js"
+    "uglify": "babel src/js -d dist/js",
+    "postinstall": "mkdir.sh"
   },
   "keywords": [],
-  "author": "",
+  "author": "Phạm Quang Hiếu",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",

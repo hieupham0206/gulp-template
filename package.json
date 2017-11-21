@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "uglify": "babel src/js -d dist/js",
-    "postinstall": "mkdir.sh"
+    "preinstall": "mkdir.sh"
   },
   "keywords": [],
   "author": "Phạm Quang Hiếu",

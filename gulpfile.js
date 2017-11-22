@@ -11,14 +11,14 @@ const gulp = require('gulp'),
   htmlmin = require('gulp-htmlmin'),
   newer = require('gulp-newer'),
   imagemin = require('gulp-imagemin'),
-  webp = require('gulp-webp')
+  webp = require('gulp-webp'),
+  browserSync = require('browser-sync')
 const paths = {
     src: 'src/',
     dist: 'dist/'
 }
 
 gulp.task('html', function () {
-    'use strict'
     return gulp.src(`${paths.src}/*.html`).pipe(htmlmin({
         removeComments: true,
         collapseWhitespace: true
@@ -26,26 +26,23 @@ gulp.task('html', function () {
 })
 
 gulp.task('styles', function () {
-    return gulp.src(`${paths.src}/sass/*.scss`).
-      pipe(sass({
-          precision: 4
-      }).on('error', sass.logError)).
+    return gulp.src(`${paths.src}/sass/[!_]*.scss`).
+      pipe(sass({precision: 4}).on('error', sass.logError)).
       pipe(autoprefixer('last 2 version')).
       pipe(gulp.dest(`${paths.dist}/css/`)).
-      pipe(rename({suffix: '.min'})).
       pipe(shorthand()).
-      pipe(cleanCss({
-          shorthandCompacting: false // it was merging rems over pixels
-      })).
-      pipe(gulp.dest(`${paths.dist}/css/`))
+      pipe(concat('bundle.min.css')).
+      pipe(cleanCss({shorthandCompacting: false})).
+      pipe(gulp.dest(`${paths.dist}/css/bundle`))
 })
 
 gulp.task('uglify', function () {
-    return gulp.src(`${paths.src}/js/*.js`).pipe(babel()).pipe(gulp.dest(`${paths.dist}/js/`))
+    return gulp.src(`${paths.src}/js/*.js`).
+      pipe(babel()).
+      pipe(gulp.dest(`${paths.dist}/js/`))
 })
 
 gulp.task('scripts', ['uglify'], function () {
-    'use strict'
     return gulp.src(`${paths.dist}/js/*.js`).
       pipe(concat('bundle.js')).
       pipe(insert.prepend('(function(window,document){')).
@@ -73,12 +70,21 @@ gulp.task('images', function () {
       .pipe(webp())
       // Publish
       .pipe(gulp.dest(`${paths.dist}/img/webp`))
+
     return true
 })
 
-gulp.task('default', function() {
-    gulp.watch(`${paths.src}/sass/*.scss`, ['styles']);
-    gulp.watch(`${paths.src}/js/*.js`, ['scripts']);
-    gulp.watch(`${paths.src}/img/*.{jpg,png,svg,gif,jpeg}`, ['images']);
-    gulp.watch(`${paths.src}/templates/*.html`, ['html']);
+gulp.task('browser-sync', function() {
+    browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
+        server: {
+            baseDir: "./dist/"
+        }
+    });
 });
+
+gulp.task('default', ['browser-sync'], function () {
+    gulp.watch(`${paths.src}/sass/*.scss`, ['styles'])
+    gulp.watch(`${paths.src}/js/*.js`, ['scripts'])
+    gulp.watch(`${paths.src}/img/*.{jpg,png,svg,gif,jpeg}`, ['images'])
+    gulp.watch(`${paths.src}/*.html`, ['html'])
+})

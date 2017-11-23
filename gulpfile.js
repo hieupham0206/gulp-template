@@ -12,7 +12,8 @@ const gulp = require('gulp'),
   newer = require('gulp-newer'),
   imagemin = require('gulp-imagemin'),
   webp = require('gulp-webp'),
-  browserSync = require('browser-sync')
+  browserSync = require('browser-sync'),
+  sourcemaps = require('gulp-sourcemaps')
 const paths = {
     src: 'src/',
     dist: 'dist/'
@@ -32,7 +33,9 @@ gulp.task('styles', function () {
       pipe(gulp.dest(`${paths.dist}/css/`)).
       pipe(shorthand()).
       pipe(concat('bundle.min.css')).
+      pipe(sourcemaps.init()).
       pipe(cleanCss({shorthandCompacting: false})).
+      pipe(sourcemaps.write()).
       pipe(gulp.dest(`${paths.dist}/css/bundle`))
 })
 
@@ -47,7 +50,9 @@ gulp.task('scripts', ['uglify'], function () {
       pipe(concat('bundle.js')).
       pipe(insert.prepend('(function(window,document){')).
       pipe(insert.append('}(this,this.document));')).
+      pipe(sourcemaps.init()).
       pipe(uglify()).
+      pipe(sourcemaps.write()).
       pipe(rename({suffix: '.min'})).
       pipe(gulp.dest(`${paths.dist}/js/bundle`))
 })

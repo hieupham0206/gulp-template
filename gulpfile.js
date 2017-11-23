@@ -27,7 +27,7 @@ gulp.task('html', function () {
 })
 
 gulp.task('styles', function () {
-    return gulp.src(`${paths.src}/sass/[!_]*.scss`).
+    return gulp.src(`${paths.src}/sass/**/[!_]*.scss`).
       pipe(sass({precision: 4}).on('error', sass.logError)).
       pipe(autoprefixer('last 2 version')).
       pipe(gulp.dest(`${paths.dist}/css/`)).
@@ -88,8 +88,8 @@ gulp.task('browser-sync', function() {
 });
 
 gulp.task('default', ['browser-sync'], function () {
-    gulp.watch(`${paths.src}/sass/*.scss`, ['styles'])
-    gulp.watch(`${paths.src}/js/*.js`, ['scripts'])
-    gulp.watch(`${paths.src}/img/*.{jpg,png,svg,gif,jpeg}`, ['images'])
+    gulp.watch(`${paths.src}/sass/**/*.scss`, ['styles'])
+    gulp.watch(`${paths.src}/js/**/*.js`, ['scripts'])
+    gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, ['images'])
     gulp.watch(`${paths.src}/*.html`, ['html'])
 })

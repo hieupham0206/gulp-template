@@ -6,7 +6,9 @@
     "uglify": "babel src/js -d dist/js",
     "preinstall": "mkdir.sh",
     "build": "gulp",
-    "style": "gulp styles"
+    "style": "gulp styles",
+    "html": "gulp html",
+    "script": "gulp scripts"
   },
   "keywords": [],
   "author": "Phạm Quang Hiếu",

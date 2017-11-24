@@ -40,13 +40,13 @@ gulp.task('styles', function () {
 })
 
 gulp.task('uglify', function () {
-    return gulp.src(`${paths.src}/js/*.js`).
+    return gulp.src(`${paths.src}/js/custom/**/*.js`).
       pipe(babel()).
       pipe(gulp.dest(`${paths.dist}/js/`))
 })
 
 gulp.task('scripts', ['uglify'], function () {
-    return gulp.src(`${paths.dist}/js/*.js`).
+    return gulp.src(`${paths.dist}/js/**/*.js`).
       pipe(concat('bundle.js')).
       pipe(insert.prepend('(function(window,document){')).
       pipe(insert.append('}(this,this.document));')).
@@ -59,7 +59,7 @@ gulp.task('scripts', ['uglify'], function () {
 
 gulp.task('images', function () {
     // Optimize & move
-    gulp.src(`${paths.src}/img/*.{jpg,png,svg,gif,jpeg}`)
+    gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
     // Only new stuff
       .pipe(newer(`${paths.dist}/img/`))
       // Optimize
@@ -68,7 +68,7 @@ gulp.task('images', function () {
       .pipe(gulp.dest(`${paths.dist}/img/`))
 
     // Make WebP versions or PNG & JPG
-    gulp.src(`${paths.src}/img/*.{jpg,png,svg,gif,jpeg}`)
+    gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
     // Only new stuff
       .pipe(newer(`${paths.dist}/img/webp`))
       // WebP
@@ -79,7 +79,7 @@ gulp.task('images', function () {
     return true
 })
 
-gulp.task('browser-sync', function() {
+gulp.task('browser-sync', ['styles', 'html', 'scripts', 'images'], function() {
     browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
         server: {
             baseDir: "./dist/"
@@ -92,4 +92,5 @@ gulp.task('default', ['browser-sync'], function () {
     gulp.watch(`${paths.src}/js/**/*.js`, ['scripts'])
     gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, ['images'])
     gulp.watch(`${paths.src}/*.html`, ['html'])
+    gulp.watch(`${paths.src}/html/**/*.html`, ['html'])
 })

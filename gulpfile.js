@@ -27,26 +27,41 @@ gulp.task('html', function () {
 })
 
 gulp.task('styles', function () {
-  return gulp.src(`${paths.src}/sass/**/[!_]*.scss`).
+  //copy toàn bộ file css từ src -> dist
+  gulp.src(`${paths.src}/css/**/*.css`).
+    pipe(gulp.dest(`${paths.dist}/css/`));
+
+  gulp.src(`${paths.src}/sass/**/[!_]*.scss`).
     pipe(sass({precision: 4}).on('error', sass.logError)).
     pipe(autoprefixer('last 2 version')).
-    pipe(gulp.dest(`${paths.dist}/css/`)).
     pipe(shorthand()).
+    pipe(cleanCss({shorthandCompacting: false})).
+    pipe(rename({suffix: '.min'})).
+    pipe(gulp.dest(`${paths.dist}/css/`)).
+    pipe(sourcemaps.init()).    
     pipe(concat('bundle.min.css')).
-    pipe(sourcemaps.init()).
     pipe(cleanCss({shorthandCompacting: false})).
     pipe(sourcemaps.write()).
     pipe(gulp.dest(`${paths.dist}/css/bundle`))
+
+    return true;
 })
 
 gulp.task('uglify', function () {
-  return gulp.src(`${paths.src}/js/custom/**/*.js`).
+  return gulp.src(`${paths.src}/js/**/*.js`).
     pipe(babel()).
+    pipe(sourcemaps.init()).
+    pipe(uglify()).
+    pipe(sourcemaps.write()).
+    pipe(rename({suffix: '.min'})).
     pipe(gulp.dest(`${paths.dist}/js/`))
 })
 
 gulp.task('scripts', ['uglify'], function () {
-  gulp.src(`${paths.src}/js/**/*.js`).pipe(gulp.dest(`${paths.dist}/js/`))
+  //copy toàn bộ file js từ src -> dist
+  gulp.src(`${paths.src}/js/**/*.js`).
+  pipe(gulp.dest(`${paths.dist}/js/`))
+  // concat file js + minify
   gulp.src(`${paths.dist}/js/**/*.js`).
     pipe(concat('bundle.js')).
     pipe(insert.prepend('(function(window,document){')).

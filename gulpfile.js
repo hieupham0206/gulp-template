@@ -23,44 +23,38 @@ gulp.task('html', function () {
   return gulp.src(`${paths.src}/*.html`).pipe(htmlmin({
     removeComments: true,
     collapseWhitespace: true
-  })).pipe(rename({extname: '.html'})).pipe(gulp.dest(`${paths.dist}`))
+  })).pipe(rename({ extname: '.html' })).pipe(gulp.dest(`${paths.dist}`))
 })
 
 gulp.task('styles', function () {
-  //copy toàn bộ file css từ src -> dist
-  gulp.src(`${paths.src}/css/**/*.css`).
-    pipe(gulp.dest(`${paths.dist}/css/`));
 
   gulp.src(`${paths.src}/sass/**/[!_]*.scss`).
-    pipe(sass({precision: 4}).on('error', sass.logError)).
+    pipe(sass({ precision: 4 }).on('error', sass.logError)).
     pipe(autoprefixer('last 2 version')).
     pipe(shorthand()).
-    pipe(cleanCss({shorthandCompacting: false})).
-    pipe(rename({suffix: '.min'})).
+    pipe(cleanCss({ shorthandCompacting: false })).
+    pipe(rename({ suffix: '.min' })).
     pipe(gulp.dest(`${paths.dist}/css/`)).
-    pipe(sourcemaps.init()).    
+    pipe(sourcemaps.init()).
     pipe(concat('bundle.min.css')).
-    pipe(cleanCss({shorthandCompacting: false})).
+    pipe(cleanCss({ shorthandCompacting: false })).
     pipe(sourcemaps.write()).
-    pipe(gulp.dest(`${paths.dist}/css/bundle`))
+    pipe(gulp.dest(`${paths.dist}/css/bundle`));
 
-    return true;
+  return true;
 })
 
 gulp.task('uglify', function () {
-  return gulp.src(`${paths.src}/js/**/*.js`).
+  return gulp.src(`${paths.src}/js/custom/**/*.js`).
     pipe(babel()).
     pipe(sourcemaps.init()).
     pipe(uglify()).
     pipe(sourcemaps.write()).
-    pipe(rename({suffix: '.min'})).
+    pipe(rename({ suffix: '.min' })).
     pipe(gulp.dest(`${paths.dist}/js/`))
 })
 
 gulp.task('scripts', ['uglify'], function () {
-  //copy toàn bộ file js từ src -> dist
-  gulp.src(`${paths.src}/js/**/*.js`).
-  pipe(gulp.dest(`${paths.dist}/js/`))
   // concat file js + minify
   gulp.src(`${paths.dist}/js/**/*.js`).
     pipe(concat('bundle.js')).
@@ -69,16 +63,26 @@ gulp.task('scripts', ['uglify'], function () {
     pipe(sourcemaps.init()).
     pipe(uglify()).
     pipe(sourcemaps.write()).
-    pipe(rename({suffix: '.min'})).
-    pipe(gulp.dest(`${paths.dist}/js/bundle`))
+    pipe(rename({ suffix: '.min' })).
+    pipe(gulp.dest(`${paths.dist}/bundle`))
 
   return true;
+})
+
+gulp.task('copy-src', function () {
+  //copy toàn bộ file js từ src -> dist
+  gulp.src(`${paths.src}/js/libs/**/*.js`).
+    pipe(gulp.dest(`${paths.dist}/js/libs/`))
+
+  //copy toàn bộ file css từ src -> dist
+  gulp.src(`${paths.src}/css/**/*.css`).
+    pipe(gulp.dest(`${paths.dist}/css/`));
 })
 
 gulp.task('images', function () {
   // Optimize & move
   gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
-  // Only new stuff
+    // Only new stuff
     .pipe(newer(`${paths.dist}/img/`))
     // Optimize
     .pipe(imagemin())
@@ -87,7 +91,7 @@ gulp.task('images', function () {
 
   // Make WebP versions or PNG & JPG
   gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
-  // Only new stuff
+    // Only new stuff
     .pipe(newer(`${paths.dist}/img/webp`))
     // WebP
     .pipe(webp())
@@ -97,7 +101,7 @@ gulp.task('images', function () {
   return true
 })
 
-gulp.task('browser-sync', ['styles', 'html', 'scripts', 'images'], function () {
+gulp.task('browser-sync', ['copy-src', 'styles', 'html', 'scripts', 'images'], function () {
   browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
     server: {
       baseDir: './dist/'

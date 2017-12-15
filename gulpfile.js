@@ -28,7 +28,7 @@ gulp.task('html', function () {
 
 gulp.task('styles', function () {
 
-  gulp.src(`${paths.src}/sass/**/[!_]*.scss`).
+  gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
     pipe(sass({ precision: 4 }).on('error', sass.logError)).
     pipe(autoprefixer('last 2 version')).
     pipe(shorthand()).
@@ -75,8 +75,10 @@ gulp.task('copy-src', function () {
     pipe(gulp.dest(`${paths.dist}/js/libs/`))
 
   //copy toàn bộ file css từ src -> dist
-  gulp.src(`${paths.src}/css/**/*.css`).
+  gulp.src(`${paths.src}/styles/css/**/*.css`).
     pipe(gulp.dest(`${paths.dist}/css/`));
+
+    return true;
 })
 
 gulp.task('images', function () {

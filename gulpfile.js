@@ -112,7 +112,7 @@ gulp.task('browser-sync', ['copy-src', 'styles', 'html', 'scripts', 'images'], f
 })
 
 gulp.task('default', ['browser-sync'], function () {
-  gulp.watch(`${paths.src}/sass/**/*.scss`, ['styles'])
+  gulp.watch(`${paths.src}/styles/sass/**/*.scss`, ['styles'])
   gulp.watch(`${paths.src}/js/**/*.js`, ['scripts'])
   gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, ['images'])
   gulp.watch(`${paths.src}/*.html`, ['html'])

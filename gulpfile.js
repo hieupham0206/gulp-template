@@ -26,6 +26,10 @@ gulp.task('html', function () {
   })).pipe(rename({ extname: '.html' })).pipe(gulp.dest(`${paths.dist}`))
 })
 
+gulp.task('clean', function (cb) {
+  del([`${dist}css`, `${dist}js`], cb);
+});
+
 gulp.task('styles', function () {
 
   gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
@@ -78,7 +82,7 @@ gulp.task('copy-src', function () {
   gulp.src(`${paths.src}/styles/css/**/*.css`).
     pipe(gulp.dest(`${paths.dist}/css/`));
 
-    return true;
+  return true;
 })
 
 gulp.task('images', function () {
@@ -111,7 +115,7 @@ gulp.task('browser-sync', ['copy-src', 'styles', 'html', 'scripts', 'images'], f
   })
 })
 
-gulp.task('default', ['browser-sync'], function () {
+gulp.task('default', ['clean', 'browser-sync'], function () {
   gulp.watch(`${paths.src}/styles/sass/**/*.scss`, ['styles'])
   gulp.watch(`${paths.src}/js/**/*.js`, ['scripts'])
   gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, ['images'])

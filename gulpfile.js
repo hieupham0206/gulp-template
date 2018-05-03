@@ -31,7 +31,7 @@ gulp.task('clean', function (cb) {
 });
 
 gulp.task('styles', function () {
-
+  // compile sass file
   gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
     pipe(sass({ precision: 4 }).on('error', sass.logError)).
     pipe(autoprefixer('last 2 version')).
@@ -110,7 +110,7 @@ gulp.task('images', function () {
 gulp.task('browser-sync', ['copy-src', 'styles', 'html', 'scripts', 'images'], function () {
   browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
     server: {
-      baseDir: './dist/html'
+      baseDir: './dist'
     }
   })
 })

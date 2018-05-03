@@ -20,14 +20,14 @@ const paths = {
 }
 
 gulp.task('html', function () {
-  return gulp.src(`${paths.src}/*.html`).pipe(htmlmin({
+  return gulp.src(`${paths.src}/html/*.html`).pipe(htmlmin({
     removeComments: true,
     collapseWhitespace: true
   })).pipe(rename({ extname: '.html' })).pipe(gulp.dest(`${paths.dist}`))
 })
 
 gulp.task('clean', function (cb) {
-  del([`${dist}css`, `${dist}js`], cb);
+  // del([`${dist}css`, `${dist}js`], cb);
 });
 
 gulp.task('styles', function () {
@@ -110,7 +110,7 @@ gulp.task('images', function () {
 gulp.task('browser-sync', ['copy-src', 'styles', 'html', 'scripts', 'images'], function () {
   browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
     server: {
-      baseDir: './dist/'
+      baseDir: './dist/html'
     }
   })
 })
@@ -119,6 +119,5 @@ gulp.task('default', ['clean', 'browser-sync'], function () {
   gulp.watch(`${paths.src}/styles/sass/**/*.scss`, ['styles'])
   gulp.watch(`${paths.src}/js/**/*.js`, ['scripts'])
   gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, ['images'])
-  gulp.watch(`${paths.src}/*.html`, ['html'])
   gulp.watch(`${paths.src}/html/**/*.html`, ['html'])
 })

@@ -128,5 +128,4 @@ typings/
 
 
 # End of https://www.gitignore.io/api/node,intellij
-/.idea/markdown-navigator.xml
-/.idea/markdown-navigator-enh.xml
+/.idea

@@ -1,6 +1,6 @@
 const gulp = require('gulp'),
     babel = require('gulp-babel'),
-    sass = require('gulp-sass'),
+    sass = require('gulp-dart-sass'),
     autoprefixer = require('gulp-autoprefixer'),
     cleanCss = require('gulp-clean-css'),
     shorthand = require('gulp-shorthand'),
@@ -12,6 +12,7 @@ const gulp = require('gulp'),
     newer = require('gulp-newer'),
     imagemin = require('gulp-imagemin'),
     webp = require('gulp-webp'),
+    pug = require('gulp-pug'),
     browserSync = require('browser-sync'),
     sourcemaps = require('gulp-sourcemaps')
 
@@ -21,7 +22,6 @@ const paths = {
 }
 
 gulp.task('html', function () {
-    console.log(`${paths.src}/html/**/*.html`);
     return gulp.src(`${paths.src}/html/**/*.html`).
         pipe(htmlmin({
             removeComments: true,
@@ -37,7 +37,7 @@ gulp.task('clean', function (cb) {
 
 gulp.task('styles', function () {
     // compile sass file
-    gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
+    return gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
         pipe(sass({ precision: 4 }).on('error', sass.logError)).
         pipe(autoprefixer('last 2 version')).
         pipe(shorthand()).
@@ -50,8 +50,6 @@ gulp.task('styles', function () {
         pipe(sourcemaps.write()).
         pipe(gulp.dest(`${paths.dist}/css/bundle`)).
         pipe(browserSync.stream())
-
-    return true
 })
 
 gulp.task('uglify', function () {
@@ -66,7 +64,7 @@ gulp.task('uglify', function () {
 
 gulp.task('scripts', gulp.series('uglify', function () {
     // concat file js + minify
-    gulp.src(`${paths.dist}/js/**/*.js`).
+    return gulp.src(`${paths.dist}/js/**/*.js`).
         pipe(concat('bundle.js')).
         pipe(insert.prepend('(function(window,document){')).
         pipe(insert.append('}(this,this.document));')).
@@ -74,10 +72,8 @@ gulp.task('scripts', gulp.series('uglify', function () {
         pipe(uglify()).
         pipe(sourcemaps.write()).
         pipe(rename({ suffix: '.min' })).
-        pipe(gulp.dest(`${paths.dist}/bundle`)).
+        pipe(gulp.dest(`${paths.dist}/js/bundle`)).
         pipe(browserSync.stream())
-
-    return true
 }))
 
 gulp.task('copy-src', function () {
@@ -114,21 +110,28 @@ gulp.task('images', function () {
     return true
 })
 
-gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'scripts', 'images', done => {
+gulp.task('pug', function() {
+    return gulp.src(`${paths.src}/pug/**/*.pug`)
+    .pipe(pug()) // pipe to pug plugin
+        .pipe(gulp.dest(`${paths.dist}`))
+});
+
+gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'pug', 'scripts', 'images', done => {
     browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
         server: {
             baseDir: './dist',
         },
     })
 
-    gulp.watch(`${paths.src}/styles/sass/**/*.scss`, gulp.series('styles'))
+    gulp.watch(`${paths.src}/styles/sass/**/*.scss`, gulp.series('styles')).on('change', browserSync.reload)
 
     gulp.watch(`${paths.src}/js/**/*.js`, gulp.series('scripts')).on('change', browserSync.reload)
 
     gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, gulp.series('images'))
 
-    // gulp.watch([`${paths.src}/html/**/*.html`], gulp.series('html')).on('change',browserSync.reload);
     gulp.watch([`${paths.src}/html/**/*.html`], gulp.series('html')).on('change', browserSync.reload)
+
+    gulp.watch([`${paths.src}/pug/**/*.pug`], gulp.series('pug')).on('change', browserSync.reload)
 }))
 
 gulp.task('default', gulp.series('browser-sync'))

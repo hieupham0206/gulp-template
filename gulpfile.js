@@ -12,7 +12,6 @@ const gulp = require('gulp'),
     newer = require('gulp-newer'),
     imagemin = require('gulp-imagemin'),
     webp = require('gulp-webp'),
-    pug = require('gulp-pug'),
     browserSync = require('browser-sync'),
     sourcemaps = require('gulp-sourcemaps')
 
@@ -110,13 +109,7 @@ gulp.task('images', function () {
     return true
 })
 
-gulp.task('pug', function() {
-    return gulp.src(`${paths.src}/pug/**/*.pug`)
-    .pipe(pug()) // pipe to pug plugin
-        .pipe(gulp.dest(`${paths.dist}`))
-});
-
-gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'pug', 'scripts', 'images', done => {
+gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'scripts', 'images', done => {
     browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
         server: {
             baseDir: './dist',
@@ -131,7 +124,7 @@ gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'pug', 'sc
 
     gulp.watch([`${paths.src}/html/**/*.html`], gulp.series('html')).on('change', browserSync.reload)
 
-    gulp.watch([`${paths.src}/pug/**/*.pug`], gulp.series('pug')).on('change', browserSync.reload)
+    // gulp.watch([`${paths.src}/pug/**/*.pug`], gulp.series('pug')).on('change', browserSync.reload)
 }))
 
 gulp.task('default', gulp.series('browser-sync'))

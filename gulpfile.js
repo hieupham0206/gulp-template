@@ -114,6 +114,12 @@ gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'scripts',
         server: {
             baseDir: './dist',
         },
+        host: '172.16.68.20',
+        browser: [],
+        // reloadDelay: 1000,
+        injectChanges: false,
+        ghostMode: true,
+        notify: false,
     })
 
     gulp.watch(`${paths.src}/styles/sass/**/*.scss`, gulp.series('styles')).on('change', browserSync.reload)

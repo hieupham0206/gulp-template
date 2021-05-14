@@ -5,8 +5,6 @@ const gulp = require('gulp'),
 	cleanCss = require('gulp-clean-css'),
 	shorthand = require('gulp-shorthand'),
 	rename = require('gulp-rename'),
-	insert = require('gulp-insert'),
-	concat = require('gulp-concat'),
 	uglify = require('gulp-uglify'),
 	htmlmin = require('gulp-htmlmin'),
 	newer = require('gulp-newer'),
@@ -15,7 +13,12 @@ const gulp = require('gulp'),
 	browserSync = require('browser-sync'),
 	sourcemaps = require('gulp-sourcemaps'),
 	del = require('del'),
-	{networkInterfaces} = require('os')
+	{networkInterfaces} = require('os'),
+	rollup = require("gulp-better-rollup"),
+
+	{nodeResolve} = require('@rollup/plugin-node-resolve'),
+	commonjs = require('@rollup/plugin-commonjs'),
+	{ terser } = require('rollup-plugin-terser')
 
 const paths = {
 	src: './src',
@@ -53,31 +56,20 @@ gulp.task('styles', function() {
 		pipe(browserSync.stream())
 })
 
-gulp.task('uglify-js', function() {
-	return gulp.src(`${paths.src}/js/custom/**/*.js`).
-		pipe(babel({
-			presets: ['@babel/preset-env'],
+gulp.task('scripts', function() {
+	return gulp.src(`${paths.src}/js/**/[!_]*.js`).
+		pipe(rollup({
+			plugins: [babel(), nodeResolve(), commonjs(), terser()]
+		},{
+			format: "iife",
 		})).
 		// pipe(sourcemaps.init()).
+		// pipe(terser()).
 		pipe(uglify()).
 		// pipe(sourcemaps.write()).
 		pipe(rename({suffix: '.min'})).
 		pipe(gulp.dest(`${paths.dist}/js/`))
 })
-
-gulp.task('scripts', gulp.series('uglify-js', function() {
-	// concat file js + minify
-	return gulp.src(`${paths.dist}/js/**/*.js`).
-		// pipe(sourcemaps.init()).
-		pipe(concat('bundle.js')).
-		pipe(insert.prepend('(function(window,document){')).
-		pipe(insert.append('}(this,this.document));')).
-		pipe(uglify()).
-		// pipe(sourcemaps.write()).
-		pipe(rename({suffix: '.min'})).
-		pipe(gulp.dest(`${paths.dist}/js/bundle`)).
-		pipe(browserSync.stream())
-}))
 
 gulp.task('copy-src', function(done) {
 	//copy toàn bộ file js từ src -> dist

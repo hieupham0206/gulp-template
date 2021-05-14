@@ -4,8 +4,9 @@
   "description": "",
   "scripts": {
     "uglify": "babel src/js -d dist/js",
-    "preinstall": "mkdir.sh",
-    "build": "gulp",
+    "dev": "gulp dev",
+    "watch": "gulp",
+    "prod": "gulp prod",
     "style": "gulp styles",
     "html": "gulp html",
     "script": "gulp scripts"
@@ -15,8 +16,10 @@
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
     "browser-sync": "^2.18.13",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.13.15",
+    "del": "^6.0.0",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^7.0.1",
     "gulp-babel": "^8.0.0",
@@ -35,6 +38,7 @@
     "gulp-webp": "^4.0.1"
   },
   "dependencies": {
-    "@babel/core": "^7.7.7"
+    "@popperjs/core": "^2.9.2",
+    "bootstrap": "^5.0.0"
   }
 }

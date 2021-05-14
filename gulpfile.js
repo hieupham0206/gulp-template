@@ -1,136 +1,165 @@
 const gulp = require('gulp'),
-    babel = require('gulp-babel'),
-    sass = require('gulp-dart-sass'),
-    autoprefixer = require('gulp-autoprefixer'),
-    cleanCss = require('gulp-clean-css'),
-    shorthand = require('gulp-shorthand'),
-    rename = require('gulp-rename'),
-    insert = require('gulp-insert'),
-    concat = require('gulp-concat'),
-    uglify = require('gulp-uglify'),
-    htmlmin = require('gulp-htmlmin'),
-    newer = require('gulp-newer'),
-    imagemin = require('gulp-imagemin'),
-    webp = require('gulp-webp'),
-    browserSync = require('browser-sync'),
-    sourcemaps = require('gulp-sourcemaps')
+	babel = require('gulp-babel'),
+	sass = require('gulp-dart-sass'),
+	autoprefixer = require('gulp-autoprefixer'),
+	cleanCss = require('gulp-clean-css'),
+	shorthand = require('gulp-shorthand'),
+	rename = require('gulp-rename'),
+	insert = require('gulp-insert'),
+	concat = require('gulp-concat'),
+	uglify = require('gulp-uglify'),
+	htmlmin = require('gulp-htmlmin'),
+	newer = require('gulp-newer'),
+	imagemin = require('gulp-imagemin'),
+	webp = require('gulp-webp'),
+	browserSync = require('browser-sync'),
+	sourcemaps = require('gulp-sourcemaps'),
+	del = require('del'),
+	{networkInterfaces} = require('os')
 
 const paths = {
-    src: './src',
-    dist: './dist',
+	src: './src',
+	dist: './dist',
 }
 
-gulp.task('html', function () {
-    return gulp.src(`${paths.src}/html/**/*.html`).
-        pipe(htmlmin({
-            removeComments: true,
-            collapseWhitespace: true,
-        })).
-        // pipe(rename({ extname: '.html' })).
-        pipe(gulp.dest(`${paths.dist}`))
+gulp.task('html', function() {
+	return gulp.src(`${paths.src}/html/**/*.html`).
+		pipe(htmlmin({
+			removeComments: true,
+			collapseWhitespace: true,
+			removeEmptyAttributes: true,
+		})).
+		pipe(gulp.dest(`${paths.dist}`))
 })
 
-gulp.task('clean', function (cb) {
-    // del([`${dist}css`, `${dist}js`], cb);
+gulp.task('clean', function(cb) {
+	return del([`${paths.dist}/css`, `${paths.dist}/js`, `${paths.dist}/img`, `${paths.dist}/fonts`], cb)
 })
 
-gulp.task('styles', function () {
-    // compile sass file
-    return gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
-        pipe(sass({ precision: 4 }).on('error', sass.logError)).
-        pipe(autoprefixer('last 2 version')).
-        pipe(shorthand()).
-        pipe(cleanCss({ shorthandCompacting: false })).
-        pipe(rename({ suffix: '.min' })).
-        pipe(gulp.dest(`${paths.dist}/css/`)).
-        pipe(sourcemaps.init()).
-        pipe(concat('bundle.min.css')).
-        pipe(cleanCss({ shorthandCompacting: false })).
-        pipe(sourcemaps.write()).
-        pipe(gulp.dest(`${paths.dist}/css/bundle`)).
-        pipe(browserSync.stream())
+gulp.task('styles', function() {
+	// compile sass file
+	return gulp.src(`${paths.src}/styles/sass/**/[!_]*.scss`).
+		pipe(sourcemaps.init()).
+		pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError)).
+		pipe(autoprefixer('last 2 version')).
+		pipe(shorthand()).
+		pipe(cleanCss({
+			mergeIntoShorthands: false,
+			level: 2,
+		})).
+		pipe(rename({suffix: '.min'})).
+		pipe(gulp.dest(`${paths.dist}/css/`)).
+		pipe(sourcemaps.write()).
+		pipe(browserSync.stream())
 })
 
-gulp.task('uglify', function () {
-    return gulp.src(`${paths.src}/js/custom/**/*.js`).
-        pipe(babel()).
-        pipe(sourcemaps.init()).
-        pipe(uglify()).
-        pipe(sourcemaps.write()).
-        pipe(rename({ suffix: '.min' })).
-        pipe(gulp.dest(`${paths.dist}/js/`))
+gulp.task('uglify-js', function() {
+	return gulp.src(`${paths.src}/js/custom/**/*.js`).
+		pipe(babel({
+			presets: ['@babel/preset-env'],
+		})).
+		// pipe(sourcemaps.init()).
+		pipe(uglify()).
+		// pipe(sourcemaps.write()).
+		pipe(rename({suffix: '.min'})).
+		pipe(gulp.dest(`${paths.dist}/js/`))
 })
 
-gulp.task('scripts', gulp.series('uglify', function () {
-    // concat file js + minify
-    return gulp.src(`${paths.dist}/js/**/*.js`).
-        pipe(concat('bundle.js')).
-        pipe(insert.prepend('(function(window,document){')).
-        pipe(insert.append('}(this,this.document));')).
-        pipe(sourcemaps.init()).
-        pipe(uglify()).
-        pipe(sourcemaps.write()).
-        pipe(rename({ suffix: '.min' })).
-        pipe(gulp.dest(`${paths.dist}/js/bundle`)).
-        pipe(browserSync.stream())
+gulp.task('scripts', gulp.series('uglify-js', function() {
+	// concat file js + minify
+	return gulp.src(`${paths.dist}/js/**/*.js`).
+		// pipe(sourcemaps.init()).
+		pipe(concat('bundle.js')).
+		pipe(insert.prepend('(function(window,document){')).
+		pipe(insert.append('}(this,this.document));')).
+		pipe(uglify()).
+		// pipe(sourcemaps.write()).
+		pipe(rename({suffix: '.min'})).
+		pipe(gulp.dest(`${paths.dist}/js/bundle`)).
+		pipe(browserSync.stream())
 }))
 
-gulp.task('copy-src', function () {
-    //copy toàn bộ file js từ src -> dist
-    gulp.src(`${paths.src}/js/libs/**/*.js`).
-        pipe(gulp.dest(`${paths.dist}/js/libs/`))
+gulp.task('copy-src', function(done) {
+	//copy toàn bộ file js từ src -> dist
+	gulp.src(`${paths.src}/js/libs/**/*.js`).pipe(gulp.dest(`${paths.dist}/js/libs/`))
 
-    //copy toàn bộ file css từ src -> dist
-    gulp.src(`${paths.src}/styles/css/**/*.css`).
-        pipe(gulp.dest(`${paths.dist}/css/`))
+	//copy toàn bộ file css từ src -> dist
 
-    return true
+	gulp.src(`${paths.src}/styles/css/**/*.css`).pipe(gulp.dest(`${paths.dist}/css/`))
+	//copy toàn bộ file font từ src -> dist
+	gulp.src(`${paths.src}/fonts/**/*.{ttf,otf}`).pipe(gulp.dest(`${paths.dist}/fonts/`))
+
+	//copy toàn bộ file video từ src -> dist
+	gulp.src(`${paths.src}/videos/**/*.mp4`).pipe(gulp.dest(`${paths.dist}/videos/`))
+
+	done()
 })
 
-gulp.task('images', function () {
-    // Optimize & move
-    gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
-        // Only new stuff
-        .pipe(newer(`${paths.dist}/img/`))
-        // Optimize
-        .pipe(imagemin())
-        // Copy
-        .pipe(gulp.dest(`${paths.dist}/img/`))
+gulp.task('images', function(done) {
+	// Optimize & move
+	gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
+		// Only new stuff
+		.pipe(newer(`${paths.dist}/img/`))
+		// Optimize
+		.pipe(imagemin())
+		// Copy
+		.pipe(gulp.dest(`${paths.dist}/img/`))
 
-    // Make WebP versions or PNG & JPG
-    gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
-        // Only new stuff
-        .pipe(newer(`${paths.dist}/img/webp`))
-        // WebP
-        .pipe(webp())
-        // Publish
-        .pipe(gulp.dest(`${paths.dist}/img/webp`))
+	// Make WebP versions or PNG & JPG
+	gulp.src(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`)
+		// Only new stuff
+		.pipe(newer(`${paths.dist}/img/webp`))
+		// WebP
+		.pipe(webp())
+		// Publish
+		.pipe(gulp.dest(`${paths.dist}/img/webp`))
 
-    return true
+	done()
 })
 
-gulp.task('browser-sync', gulp.parallel('copy-src', 'styles', 'html', 'scripts', 'images', done => {
-    browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
-        server: {
-            baseDir: './dist',
-        },
-        host: '172.16.68.20',
-        browser: [],
-        // reloadDelay: 1000,
-        injectChanges: false,
-        ghostMode: true,
-        notify: false,
-    })
+gulp.task('watch', gulp.series('copy-src', gulp.parallel('styles', 'html', 'scripts', 'images'), () => {
 
-    gulp.watch(`${paths.src}/styles/sass/**/*.scss`, gulp.series('styles')).on('change', browserSync.reload)
+	const nets = networkInterfaces()
+	const results = Object.create(null) // Or just '{}', an empty object
 
-    gulp.watch(`${paths.src}/js/**/*.js`, gulp.series('scripts')).on('change', browserSync.reload)
+	for (const name of Object.keys(nets)) {
+		for (const net of nets[name]) {
+			// Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+			if (net.family === 'IPv4' && !net.internal) {
+				if (!results[name]) {
+					results[name] = []
+				}
+				results[name].push(net.address)
+			}
+		}
+	}
 
-    gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, gulp.series('images'))
+	browserSync.init([`${paths.dist}/css/*.css`, `${paths.dist}/js/*.js`, `${paths.dist}/*.html`], {
+		server: {
+			baseDir: './dist',
+		},
+		host: results ? results['Wi-Fi'][0] : '',
+		browser: [],
+		injectChanges: false,
+		ghostMode: true,
+		notify: false,
+	})
 
-    gulp.watch([`${paths.src}/html/**/*.html`], gulp.series('html')).on('change', browserSync.reload)
+	gulp.watch(`${paths.src}/styles/sass/**/*.scss`, gulp.series('styles')).on('change', browserSync.reload)
 
-    // gulp.watch([`${paths.src}/pug/**/*.pug`], gulp.series('pug')).on('change', browserSync.reload)
+	gulp.watch(`${paths.src}/js/**/*.js`, gulp.series('scripts')).on('change', browserSync.reload)
+
+	gulp.watch(`${paths.src}/img/**/*.{jpg,png,svg,gif,jpeg}`, gulp.series('images'))
+
+	gulp.watch([`${paths.src}/html/**/*.html`], gulp.series('html')).on('change', browserSync.reload)
 }))
 
-gulp.task('default', gulp.series('browser-sync'))
+gulp.task('prod', gulp.series('clean', 'copy-src', gulp.parallel('styles', 'html', 'scripts', 'images'), done => {
+	done()
+}))
+
+gulp.task('dev', gulp.series('copy-src', gulp.parallel('styles', 'html', 'scripts', 'images'), done => {
+	done()
+}))
+
+gulp.task('default', gulp.series('watch'))
